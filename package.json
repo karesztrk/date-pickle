@@ -1,0 +1,30 @@
+{
+  "name": "date-pickle",
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js"
+    }
+  },
+  "module": "./dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rslib build",
+    "check": "biome check --write",
+    "dev": "rslib build --watch",
+    "format": "biome format --write",
+    "serve": "web-dev-server --open demo/ --node-resolve --watch"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@rslib/core": "^0.5.2",
+    "@web/dev-server": "^0.4.6"
+  },
+  "private": true,
+  "peerDependencies": {
+    "lit": "^3.2.1"
+  }
+}
