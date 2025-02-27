@@ -1,5 +1,7 @@
 import { LitElement, html, css } from "lit";
 import { add, format, cloneDate, startOf, setDay, getDate } from "./date.util";
+import { computePosition, offset, flip } from "@floating-ui/dom";
+import { createRef, ref } from "lit/directives/ref.js";
 
 class DatePickle extends LitElement {
   static get styles() {
@@ -9,6 +11,16 @@ class DatePickle extends LitElement {
 
       .date-pickle-body {
         border: 1px solid black;
+        width: max-content;
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+
+      .heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
       }
     `;
   }
@@ -22,10 +34,50 @@ class DatePickle extends LitElement {
     };
   }
 
+  inputRef = createRef();
+
+  bodyRef = createRef();
+
   constructor() {
     super();
-    this.open = false;
+    this.open = true;
     this.displayDate = new Date();
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+  }
+
+  positionBody() {
+    if (!this.inputRef.value || !this.bodyRef.value) {
+      return;
+    }
+
+    computePosition(this.inputRef.value, this.bodyRef.value, {
+      placement: "bottom-start",
+      middleware: [offset(6), flip()],
+    }).then(({ x, y }) => {
+      if (!this.bodyRef.value) {
+        return;
+      }
+      Object.assign(this.bodyRef.value.style, {
+        left: `${x}px`,
+        top: `${y}px`,
+      });
+    });
+  }
+
+  update(changedProperties) {
+    super.update(changedProperties);
+    this.positionBody();
+  }
+
+  onInputFocus() {
+    this.open = true;
+  }
+
+  onInputBlur() {
+    // this.open = false;
   }
 
   getHeadingText() {
@@ -33,7 +85,7 @@ class DatePickle extends LitElement {
   }
 
   nextYearClick() {
-    this.displayDate = add(this.displayDate, "year", 1);
+    this.displaydate = add(this.displaydate, "year", 1);
   }
 
   nextMonthClick() {
@@ -56,7 +108,7 @@ class DatePickle extends LitElement {
         aria-label="Previous year"
         type="button"
       >
-        Prev year
+        «
       </button>
       <button
         class="prevMonth btn btn-icon"
@@ -64,7 +116,7 @@ class DatePickle extends LitElement {
         aria-label="Previous month"
         type="button"
       >
-        Prev month
+        ‹
       </button>
       <div class="monthDisplay">${this.getHeadingText()}</div>
       <button
@@ -73,7 +125,7 @@ class DatePickle extends LitElement {
         aria-label="Next month"
         type="button"
       >
-        Next month
+        ›
       </button>
       <button
         class="nextYear btn btn-icon"
@@ -81,7 +133,7 @@ class DatePickle extends LitElement {
         aria-label="Next year"
         type="button"
       >
-        Next year
+        »
       </button>
     </div>`;
   }
@@ -123,7 +175,7 @@ class DatePickle extends LitElement {
           <tbody role="presentation">
             ${weeks.map(
               (week, weekIndex) =>
-                html`<tr key="{weekIndex}" role="row">
+                html`<tr role="row">
                   ${week.map((day, dayIndex) => {
                     const index = weekIndex * 7 + dayIndex;
                     return html`<td role="gridcell">
@@ -139,19 +191,28 @@ class DatePickle extends LitElement {
   }
 
   renderBody() {
-    return html`<div class="date-pickle-body">
+    return html`<div
+      class="date-pickle-body"
+      ${ref(this.bodyRef)}
+      aria-label="Date Selector"
+    >
       ${this.renderHeader()} ${this.renderCalendar()}
     </div>`;
   }
 
   renderInput() {
     return html`<div class="date-pickle-input">
-      <input type="text" />
+      <input
+        type="text"
+        ${ref(this.inputRef)}
+        @focus=${this.onInputFocus}
+        @blur=${this.onInputBlur}
+      />
     </div>`;
   }
 
   render() {
-    return html` ${this.renderBody()} ${this.renderInput()} `;
+    return html` ${this.renderInput()} ${this.open ? this.renderBody() : ""} `;
   }
 }
 
