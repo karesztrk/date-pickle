@@ -2,6 +2,7 @@ import { LitElement, html, css } from "lit";
 import { add, format, cloneDate, startOf, setDay, getDate } from "./date.util";
 import { computePosition, offset, flip } from "@floating-ui/dom";
 import { createRef, ref } from "lit/directives/ref.js";
+import DatePickleController from "./date-pickle-controller";
 
 class DatePickle extends LitElement {
   static get styles() {
@@ -17,7 +18,8 @@ class DatePickle extends LitElement {
         left: 0;
       }
 
-      .heading {
+      .heading,
+      .actionbar {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -27,10 +29,10 @@ class DatePickle extends LitElement {
 
   static get properties() {
     return {
-      title: { type: String },
-      counter: { type: Number },
-      open: { type: Boolean },
-      displayDate: { type: Date },
+      value: { type: Date },
+      range: { type: Boolean },
+      presets: { type: Object | undefined },
+      format: { type: String },
     };
   }
 
@@ -38,14 +40,32 @@ class DatePickle extends LitElement {
 
   bodyRef = createRef();
 
+  controller;
+
   constructor() {
     super();
+    this.value = undefined;
     this.open = true;
     this.displayDate = new Date();
+    this.range = false;
+    this.presets = undefined;
+    this.format = "yyyy-MM-dd HH:mm";
+    this.controller = new DatePickleController(this);
   }
 
-  connectedCallback() {
-    super.connectedCallback();
+  get selectedDate() {
+    return this.controller.selectedDate;
+  }
+
+  set selectedDate(date) {
+    this.controller.selectedDate = date;
+  }
+
+  getForattedDate() {
+    const start = this.selectedDate
+      ? format(this.selectedDate, this.format)
+      : "";
+    return `${start}${this.range && this.selectedEndDate ? ` - ${format(this.selectedEndDate, this.format)}` : ""}`;
   }
 
   positionBody() {
@@ -138,9 +158,118 @@ class DatePickle extends LitElement {
     </div>`;
   }
 
+  today() {
+    const now = new Date();
+    this.displayDate = now;
+
+    if (this.range) {
+      selectRange(now, now);
+    } else {
+      select(now);
+    }
+  }
+
+  tomorrow() {
+    const tomorrow = add(new Date(), "days", 1);
+    this.displayDate = tomorrow;
+    this.selectedDate = tomorrow;
+  }
+
+  clear() {
+    this.selectedDate = undefined;
+  }
+
+  onChange(value) {
+    if (!value || !presets) {
+      return;
+    }
+
+    if (!presets[value]) {
+      return;
+    }
+
+    const [start, end] = presets[value];
+
+    // selectRange(start, end);
+  }
+
+  renderPreset() {
+    return html`
+      <select $change=${onChange} label="Presets" placeholder="Select period">
+        ${Object.entries(this.presets).map(
+          ([key]) => html` <option value=${key}>${key}</option> `,
+        )}
+      </select>
+    `;
+  }
+
+  renderActionbar() {
+    return html`
+      <div class="actionbar">
+        ${this.presets
+          ? this.renderPreset()
+          : html`
+              <div>
+                <button @click=${this.today}>Today</button>
+                <button @click=${this.tomorrow}>Tomorrow</button>
+              </div>
+            `}
+        <button @click=${this.clear}>Clear</button>
+      </div>
+    `;
+  }
+
+  renderTimeRangeSelector() {
+    const selectedTime = this.selectedDate
+      ? format(this.selectedDate, "HH:mm")
+      : "";
+    return html`
+      <div class="timeRangeSelector">
+        <date-pickle-time>
+          <input
+            type="time"
+            class="input-small"
+            value=${selectedTime}
+            aria-label="Start time"
+          />
+        </date-pickle-time>
+        -
+        <date-pickle-time>
+          <input type="time" class="input-small" aria-label="End time" />
+        </date-pickle-time>
+      </div>
+    `;
+  }
+
+  renderTimeSelector() {
+    const selectedTime = this.selectedDate
+      ? format(this.selectedDate, "HH:mm")
+      : "";
+    return this.range
+      ? this.renderTimeRangeSelector()
+      : html`
+          <date-pickle-time>
+            <input
+              type="time"
+              class="input-small"
+              aria-label="Time"
+              value=${selectedTime}
+            />
+          </date-pickle-time>
+        `;
+  }
+
+  onDaySelectClick(day) {
+    return () => {
+      this.selectedDate = day;
+    };
+  }
+
   renderCell(day, index) {
     return html` <div class="calendar-date">
-      <button type="button">${getDate(day)}</button>
+      <button type="button" @click=${this.onDaySelectClick(day)}>
+        ${getDate(day)}
+      </button>
     </div>`;
   }
 
@@ -197,6 +326,7 @@ class DatePickle extends LitElement {
       aria-label="Date Selector"
     >
       ${this.renderHeader()} ${this.renderCalendar()}
+      ${this.renderTimeSelector()} ${this.renderActionbar()}
     </div>`;
   }
 
@@ -204,6 +334,8 @@ class DatePickle extends LitElement {
     return html`<div class="date-pickle-input">
       <input
         type="text"
+        readonly
+        value=${this.getForattedDate()}
         ${ref(this.inputRef)}
         @focus=${this.onInputFocus}
         @blur=${this.onInputBlur}
