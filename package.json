@@ -25,6 +25,8 @@
   },
   "private": true,
   "peerDependencies": {
-    "lit": "^3.2.1"
-  }
+    "lit": "^3.2.1",
+    "date-fns": "^4.1.0"
+  },
+  "dependencies": {}
 }
