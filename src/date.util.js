@@ -1,4 +1,6 @@
 import {
+  differenceInMilliseconds,
+  isValid as fnsIsValid,
   lightFormat,
   addMonths,
   addYears,
@@ -12,6 +14,11 @@ import {
   startOfDay,
   setDay as fnsSetDay,
   getDate as fnsGetDate,
+  parse as fnsParse,
+  getHours as fnsGetHours,
+  setHours as fnsSetHours,
+  getMinutes as fnsGetMinutes,
+  setMinutes as fnsSetMinutes,
 } from "date-fns";
 
 /**
@@ -43,9 +50,12 @@ export const add = (date, type, amount) => {
 };
 
 /**
- * @param {Date} date
+ * @param {Date| undefined} date
  */
 export const cloneDate = (date) => {
+  if (!date) {
+    return undefined;
+  }
   return constructFrom(date, date.getTime());
 };
 
@@ -108,4 +118,64 @@ export const setDay = (date, value) => {
  */
 export const getDate = (date) => {
   return fnsGetDate(date);
+};
+
+/**
+ * @param {string} date
+ * @param {string} format
+ */
+export const parse = (date, format) => {
+  return fnsParse(date, format);
+};
+
+/**
+ * @param {unknown} date
+ */
+export const isValid = (date) => {
+  if (!date) {
+    return false;
+  }
+  return fnsIsValid(date);
+};
+
+/**
+ * @type {(left: Date, right: Date) => number}
+ */
+export const sortedDates = (left, right) =>
+  differenceInMilliseconds(left, right);
+
+/**
+ * @param {Date} date
+ * @param {number} amount
+ */
+export const setHours = (date, amount) => {
+  if (!date) {
+    return date;
+  }
+  return fnsSetHours(date, amount);
+};
+
+/**
+ * @param {Date} date
+ * @param {number} amount
+ */
+export const setMinutes = (date, amount) => {
+  if (!date) {
+    return date;
+  }
+  return fnsSetMinutes(date, amount);
+};
+
+/**
+ * @param {Date} date
+ */
+export const getHours = (date) => {
+  return fnsGetHours(date);
+};
+
+/**
+ * @param {Date} date
+ */
+export const getMinutes = (date) => {
+  return fnsGetMinutes(date);
 };
