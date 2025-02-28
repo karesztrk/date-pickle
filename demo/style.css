@@ -2,3 +2,7 @@
   font-family: system-ui, sans-serif;
   font-weight: normal;
 }
+
+p {
+  margin-block-end: 350px;
+}

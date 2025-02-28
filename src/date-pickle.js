@@ -131,14 +131,6 @@ class DatePickle extends LitElement {
     this.positionBody();
   }
 
-  onInputFocus() {
-    this.open = true;
-  }
-
-  onInputBlur() {
-    // this.open = false;
-  }
-
   getHeadingText() {
     return format(this.displayDate, "MMM yyyy");
   }
@@ -438,8 +430,6 @@ class DatePickle extends LitElement {
         readonly
         value=${this.getForattedDate()}
         ${ref(this.inputRef)}
-        @focus=${this.onInputFocus}
-        @blur=${this.onInputBlur}
       />
     </div>`;
   }
