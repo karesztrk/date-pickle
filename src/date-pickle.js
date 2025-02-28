@@ -240,6 +240,29 @@ class DatePickle extends LitElement {
     this.controller.selectRange(start, end);
   }
 
+  /**
+   * @param e {Event}
+   */
+  onTimeChage(e) {
+    const newValue = e.target?.value;
+    if (!newValue) {
+      return;
+    }
+
+    const [hours, minutes] = newValue.split(":").map(Number);
+    this.controller.selectTime({ hours, minutes });
+  }
+
+  onEndTimeChage(e) {
+    const newValue = e.target?.value;
+    if (!newValue) {
+      return;
+    }
+
+    const [hours, minutes] = newValue.split(":").map(Number);
+    this.controller.selectEndTime({ hours, minutes });
+  }
+
   renderPreset() {
     return html`
       <select $change=${onChange} label="Presets" placeholder="Select period">
@@ -270,19 +293,27 @@ class DatePickle extends LitElement {
     const selectedTime = this.selectedDate
       ? format(this.selectedDate, "HH:mm")
       : "";
+    const selectedEndTime = this.selectedDate
+      ? format(this.selectedEndDate, "HH:mm")
+      : "";
     return html`
       <div class="timeRangeSelector">
         <date-pickle-time>
           <input
             type="time"
-            class="input-small"
             value=${selectedTime}
             aria-label="Start time"
+            @change=${this.onTimeChage}
           />
         </date-pickle-time>
         -
         <date-pickle-time>
-          <input type="time" class="input-small" aria-label="End time" />
+          <input
+            type="time"
+            aria-label="End time"
+            value=${selectedEndTime}
+            @change=${this.onEndTimeChage}
+          />
         </date-pickle-time>
       </div>
     `;
@@ -298,9 +329,9 @@ class DatePickle extends LitElement {
           <date-pickle-time>
             <input
               type="time"
-              class="input-small"
               aria-label="Time"
               value=${selectedTime}
+              @change=${this.onTimeChage}
             />
           </date-pickle-time>
         `;

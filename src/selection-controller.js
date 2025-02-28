@@ -85,15 +85,15 @@ class SelectionController {
    * @param {Date | undefined} end
    */
   selectRange(start, end) {
-    const newStart = cloneDate(start);
+    let newStart = cloneDate(start);
     if (newStart && this.selectedDate) {
-      setHours(newStart, getHours(this.selectedDate));
-      setMinutes(newStart, getMinutes(this.selectedDate));
+      newStart = setHours(newStart, getHours(this.selectedDate));
+      newStart = setMinutes(newStart, getMinutes(this.selectedDate));
     }
-    const newEnd = cloneDate(end);
+    let newEnd = cloneDate(end);
     if (newEnd && this.selectedEndDate) {
-      setHours(newEnd, getHours(this.selectedEndDate));
-      setMinutes(newEnd, getMinutes(this.selectedEndDate));
+      newEnd = setHours(newEnd, getHours(this.selectedEndDate));
+      newEnd = setMinutes(newEnd, getMinutes(this.selectedEndDate));
     }
 
     const updated = [];
@@ -117,17 +117,17 @@ class SelectionController {
    */
   selectTime(value) {
     const { hours, minutes } = value;
-    const newValue = cloneDate(this.selectedDate) ?? startOf(new Date(), "day");
+    let newValue = cloneDate(this.selectedDate) ?? startOf(new Date(), "day");
     if (hours && !Number.isNaN(hours)) {
-      setHours(newValue, hours);
+      newValue = setHours(newValue, hours);
     }
     if (minutes && !Number.isNaN(minutes)) {
-      setMinutes(newValue, minutes);
+      newValue = setMinutes(newValue, minutes);
     }
-    const updated = [...prev];
+    const updated = [...this.#selectedDates];
     updated[0] = newValue;
     this.#selectedDates = updated;
-    propagateInputValue(newValue, this.selectedEndDate);
+    this.propagateInputValue(newValue, this.selectedEndDate);
   }
 
   /**
@@ -135,16 +135,17 @@ class SelectionController {
    */
   selectEndTime(value) {
     const { hours, minutes } = value;
-    const newValue =
-      cloneDate(selectedEndDate) ?? parse(this.selectedDate, this.host.format);
+    let newValue =
+      cloneDate(this.selectedEndDate) ??
+      parse(this.selectedDate, this.host.format);
     if (hours && !Number.isNaN(hours)) {
-      setHours(newValue, hours);
+      newValue = setHours(newValue, hours);
     }
     if (minutes && !Number.isNaN(minutes)) {
-      setMinutes(newValue, minutes);
+      newValue = setMinutes(newValue, minutes);
     }
 
-    const updated = [...prev];
+    const updated = [...this.#selectedDates];
     updated[this.endIndex] = newValue;
     this.#selectedDates = updated;
     this.propagateInputValue(this.selectedDate, newValue);
