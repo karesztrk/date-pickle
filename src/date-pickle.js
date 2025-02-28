@@ -1,13 +1,36 @@
 import { LitElement, html, css } from "lit";
-import { add, format, cloneDate, startOf, setDay, getDate } from "./date.util";
+import {
+  isBetweenInclusive,
+  isToday,
+  isSameMonth,
+  isSame,
+  add,
+  format,
+  cloneDate,
+  startOf,
+  setDay,
+  getDate,
+} from "./date.util";
 import { computePosition, offset, flip } from "@floating-ui/dom";
 import { createRef, ref } from "lit/directives/ref.js";
 import SelectionController from "./selection-controller";
+import { classMap } from "lit/directives/class-map.js";
 
 class DatePickle extends LitElement {
   static get styles() {
     return css`
       :host {
+      }
+
+      table {
+        table-layout: fixed;
+        border-collapse: separate;
+        border: 0;
+      }
+
+      th,
+      td {
+        width: 2rem;
       }
 
       .date-pickle-body {
@@ -16,6 +39,7 @@ class DatePickle extends LitElement {
         position: absolute;
         top: 0;
         left: 0;
+        background-color: white;
       }
 
       .heading,
@@ -23,6 +47,20 @@ class DatePickle extends LitElement {
         display: flex;
         align-items: center;
         justify-content: space-between;
+      }
+
+      button {
+        font: inherit;
+      }
+
+      .selected button,
+      .start button,
+      .end button {
+        background-color: burlywood;
+      }
+
+      .range:not(.start):not(.end) button {
+        background-color: hotpink;
       }
     `;
   }
@@ -50,6 +88,7 @@ class DatePickle extends LitElement {
     this.range = false;
     this.presets = undefined;
     this.format = "yyyy-MM-dd HH:mm";
+    this.activeIndex = -1;
     this.controller = new SelectionController(this);
   }
 
@@ -105,19 +144,23 @@ class DatePickle extends LitElement {
   }
 
   nextYearClick() {
-    this.displaydate = add(this.displaydate, "year", 1);
+    this.displayDate = add(this.displayDate, "year", 1);
+    this.requestUpdate();
   }
 
   nextMonthClick() {
     this.displayDate = add(this.displayDate, "month", 1);
+    this.requestUpdate();
   }
 
   prevYearClick() {
     this.displayDate = add(this.displayDate, "year", -1);
+    this.requestUpdate();
   }
 
   prevMonthClick() {
     this.displayDate = add(this.displayDate, "month", -1);
+    this.requestUpdate();
   }
 
   renderHeader() {
@@ -269,8 +312,31 @@ class DatePickle extends LitElement {
     };
   }
 
+  /**
+   * @param {Date} day
+   * @param {number} index
+   */
   renderCell(day, index) {
-    return html` <div class="calendar-date">
+    const active = this.activeIndex === index;
+    const disabled = !isSameMonth(day, this.displayDate);
+    const start = isSame(day, this.selectedDate);
+    const end = isSame(day, this.selectedEndDate);
+    const selected = start || end;
+    const today = isToday(day);
+    const between = this.range
+      ? isBetweenInclusive(day, this.selectedDate, this.selectedEndDate)
+      : false;
+
+    const classes = {
+      selected,
+      today,
+      disabled,
+      active,
+      range: between,
+      start: between && start,
+      end: between && end,
+    };
+    return html` <div class=${classMap(classes)} class="calendar-date">
       <button type="button" @click=${this.onDaySelectClick(day)}>
         ${getDate(day)}
       </button>
@@ -291,7 +357,7 @@ class DatePickle extends LitElement {
     return html`
       <div class="calendar">
         <table role="grid" aria-labelledby="calendar">
-          <caption id="calendar" class="cxn-visually-hidden">
+          <caption id="calendar" class="visually-hidden">
             Calendar
           </caption>
           <thead role="presentation">

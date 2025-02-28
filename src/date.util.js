@@ -1,4 +1,5 @@
 import {
+  isToday as fnsIsToday,
   differenceInMilliseconds,
   isValid as fnsIsValid,
   lightFormat,
@@ -10,6 +11,7 @@ import {
   isAfter,
   isBefore,
   isSameDay,
+  isSameMonth as fnsIsSameMonth,
   startOfMonth,
   startOfDay,
   setDay as fnsSetDay,
@@ -24,6 +26,7 @@ import {
 /**
  * @param {Date} date
  * @param {string} format
+ * @returns {string}
  */
 export const format = (date, format) => {
   return lightFormat(date, format);
@@ -33,6 +36,7 @@ export const format = (date, format) => {
  * @param {Date} date
  * @param {'days' | 'month' | 'year'} type
  * @param {number} amount
+ * @returns {Date}
  */
 export const add = (date, type, amount) => {
   switch (type) {
@@ -51,6 +55,7 @@ export const add = (date, type, amount) => {
 
 /**
  * @param {Date| undefined} date
+ * @returns {Date | undefined}
  */
 export const cloneDate = (date) => {
   if (!date) {
@@ -76,20 +81,33 @@ export const isBetweenInclusive = (selected, start, end) => {
 };
 
 /**
- * @param {Date} day
- * @param {Date | undefined} moment
+ * @param {Date} left
+ * @param {Date | undefined} right
  * @returns {boolean}
  */
-export const isSame = (day, moment) => {
-  if (!moment) {
+export const isSame = (left, right) => {
+  if (!right) {
     return false;
   }
-  return isSameDay(day, moment);
+  return isSameDay(left, right);
+};
+
+/**
+ * @param {Date} left
+ * @param {Date | undefined} right
+ * @returns {boolean}
+ */
+export const isSameMonth = (left, right) => {
+  if (!right) {
+    return false;
+  }
+  return fnsIsSameMonth(left, right);
 };
 
 /**
  * @param {Date} date
  * @param {'day' | 'month'} type
+ * @returns {Date}
  */
 export const startOf = (date, type) => {
   switch (type) {
@@ -105,6 +123,7 @@ export const startOf = (date, type) => {
 /**
  * @param {Date} date
  * @param {'Sunday'} value
+ * @returns {Date}
  */
 export const setDay = (date, value) => {
   if (value !== "Sunday") {
@@ -115,6 +134,7 @@ export const setDay = (date, value) => {
 
 /**
  * @param {Date} date
+ * @returns {number}
  */
 export const getDate = (date) => {
   return fnsGetDate(date);
@@ -123,6 +143,7 @@ export const getDate = (date) => {
 /**
  * @param {string} date
  * @param {string} format
+ * @returns {Date}
  */
 export const parse = (date, format) => {
   return fnsParse(date, format);
@@ -130,6 +151,7 @@ export const parse = (date, format) => {
 
 /**
  * @param {unknown} date
+ * @returns {boolean}
  */
 export const isValid = (date) => {
   if (!date) {
@@ -140,6 +162,7 @@ export const isValid = (date) => {
 
 /**
  * @type {(left: Date, right: Date) => number}
+ * @returns {number}
  */
 export const sortedDates = (left, right) =>
   differenceInMilliseconds(left, right);
@@ -147,6 +170,7 @@ export const sortedDates = (left, right) =>
 /**
  * @param {Date} date
  * @param {number} amount
+ * @returns {Date}
  */
 export const setHours = (date, amount) => {
   if (!date) {
@@ -158,6 +182,7 @@ export const setHours = (date, amount) => {
 /**
  * @param {Date} date
  * @param {number} amount
+ * @returns {Date}
  */
 export const setMinutes = (date, amount) => {
   if (!date) {
@@ -168,6 +193,7 @@ export const setMinutes = (date, amount) => {
 
 /**
  * @param {Date} date
+ * @returns {number}
  */
 export const getHours = (date) => {
   return fnsGetHours(date);
@@ -175,7 +201,16 @@ export const getHours = (date) => {
 
 /**
  * @param {Date} date
+ * @returns {number}
  */
 export const getMinutes = (date) => {
   return fnsGetMinutes(date);
+};
+
+/**
+ * @param {Date} date
+ * @returns {boolean}
+ */
+export const isToday = (date) => {
+  return fnsIsToday(date);
 };
