@@ -116,12 +116,12 @@ class SelectionController {
    * @type {Time} value
    */
   selectTime(value) {
-    const { hours, minutes } = value;
+    const { hours = 0, minutes = 0 } = value;
     let newValue = cloneDate(this.selectedDate) ?? startOf(new Date(), "day");
-    if (hours && !Number.isNaN(hours)) {
+    if (!Number.isNaN(hours)) {
       newValue = setHours(newValue, hours);
     }
-    if (minutes && !Number.isNaN(minutes)) {
+    if (!Number.isNaN(minutes)) {
       newValue = setMinutes(newValue, minutes);
     }
     const updated = [...this.#selectedDates];
@@ -134,14 +134,14 @@ class SelectionController {
    * @type {Time} value
    */
   selectEndTime(value) {
-    const { hours, minutes } = value;
+    const { hours = 0, minutes = 0 } = value;
     let newValue =
       cloneDate(this.selectedEndDate) ??
       parse(this.selectedDate, this.host.format);
-    if (hours && !Number.isNaN(hours)) {
+    if (!Number.isNaN(hours)) {
       newValue = setHours(newValue, hours);
     }
-    if (minutes && !Number.isNaN(minutes)) {
+    if (!Number.isNaN(minutes)) {
       newValue = setMinutes(newValue, minutes);
     }
 
